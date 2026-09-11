@@ -50,7 +50,7 @@ GROUP BY u.id;
 -- Ожидается: 4 строки; GPA-2 → 66.1
 -- ---------------------------------------------------------------------
 -- Задача 3
-
+select
 
 
 -- ---------------------------------------------------------------------
@@ -74,6 +74,12 @@ GROUP BY u.id;
 -- Ожидается: 10 строк «как есть». Почему не 9? Посмотрите на severity внимательно.
 -- ---------------------------------------------------------------------
 -- Задача 6
+select st.name, e.severity, count(e.severity)
+from event e
+join unit u on e.unit_id = u.id
+join station st on st.id = u.station_id
+group by st.name, e.severity;
+
 
 
 
@@ -82,6 +88,12 @@ GROUP BY u.id;
 -- Ожидается: 5 агрегатов. Если у вас 6 — вы не учли регистр в severity.
 -- ---------------------------------------------------------------------
 -- Задача 7
+select u
+from unit u
+where not exists (
+    select 1 from event e
+    where u.id = e.unit_id and e.severity in ('alarm', 'Alarm', 'unplanned_stop')
+);
 
 
 
