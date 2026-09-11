@@ -50,22 +50,45 @@ GROUP BY u.id;
 -- Ожидается: 4 строки; GPA-2 → 66.1
 -- ---------------------------------------------------------------------
 -- Задача 3
-select
-
+select u.id, round(avg(t.value)::numeric, 1)
+from unit u
+join sensor s on u.id = s.unit_id
+join telemetry t on t.sensor_id = s.id
+where s.kind = 'temp'
+group by u.id;
 
 -- ---------------------------------------------------------------------
 -- Задача 4. Датчики температуры с максимумом > 85
 -- Ожидается: 1 строка — TE-302 (GPA-2), ~88.3
 -- ---------------------------------------------------------------------
 -- Задача 4
+select s.id, s.kind, max(t.value)
+from sensor s
+join telemetry t on t.sensor_id = s.id
+where s.kind = 'temp'
+group by s.id, s.kind
+having max(t.value) > 85;
 
 
+select s.id, s.kind, t.value
+from sensor s
+join telemetry t on t.sensor_id = s.id
+where t.value > 85 and s.kind = 'temp'
+order by t.value desc
+limit 1;
 
 -- ---------------------------------------------------------------------
 -- Задача 5. Почасовой профиль температуры подшипника GPA-2
 -- Ожидается: 25 строк; 11:00 → 73.4, 13:00 → 83.8, 14:00 → 85.5
 -- ---------------------------------------------------------------------
 -- Задача 5
+select date_trunc('hour', t.ts) as hour, round(avg(t.value)::numeric, 1) as avg_temp
+from sensor s
+join telemetry t on t.sensor_id = s.id
+where s.unit_id = 'GPA-2' and s.tag = 'TE-302'
+group by date_trunc('hour', t.ts)
+order by hour;
+
 
 
 
