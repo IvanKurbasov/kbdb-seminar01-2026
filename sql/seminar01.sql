@@ -126,13 +126,31 @@ where not exists (
 
 -- Задача 8*. Последнее измерение каждого датчика (17 строк)
 -- Задача 8*
-
+select distinct on (s.tag) s.tag, t.ts, t.value
+from sensor s
+join telemetry t on t.sensor_id = s.id
+order by s.tag, t.ts desc;
 
 
 -- Задача 9*. Часы, где средняя температура TE-302 выросла > 5 °C к предыдущему часу
 -- Ожидается: 12:00 и 13:00
 -- Задача 9*
-
+with hour_avg_temp as (
+    select date_trunc('hour', t.ts) as hour, avg(t.value) as avg_temp
+    from telemetry t
+    join sensor s on s.id = t.sensor_id
+    where s.tag = 'TE-302'
+    group by date_trunc('hour', t.ts)
+    order by date_trunc('hour', t.ts)
+),
+with_prev as (
+    select hour, avg_temp, lag(avg_temp) over (order by hour) as prev_t
+    from hour_avg_temp
+)
+select hour, round(avg_temp::numeric, 2) as avg_temp, round((avg_temp - prev_t)::numeric, 2) as delta
+from with_prev
+where avg_temp - prev_t > 5
+order by hour;
 
 
 -- Задача 10*. Ремонт в течение 48 ч после каждой внеплановой остановки
