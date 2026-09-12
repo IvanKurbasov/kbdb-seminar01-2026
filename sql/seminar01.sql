@@ -16,7 +16,7 @@ set timezone = 'Europe/Moscow';
 -- Значения event.severity: Текстовые значения: info, unplanned_stop, warning, alarm. Кроме того,
 -- есть написание через нижнее подчеркивание(unplanned_stop), написание с большой буквы(Alarm),
 -- лишний пробел("warning ")
--- Датчики без измерений:   ...
+-- Датчики без измерений:   TE-999
 -- Агрегаты без датчиков:   GPA-4
 -- «Грязная» запись в maintenance (id и что не так): 3, имеется пустая строка в parts
 
@@ -156,7 +156,10 @@ order by hour;
 -- Задача 10*. Ремонт в течение 48 ч после каждой внеплановой остановки
 -- Ожидается: P-2 → через 30.8 ч, GPA-2 → через 4.7 ч
 -- Задача 10*
-
+select m.unit_id, round(extract(epoch from (m.performed_at - e.ts)) / 3600.0, 1) as hours_to_repair
+from maintenance m
+join event e on e.unit_id = m.unit_id and m.performed_at >= e.ts and m.performed_at < e.ts + interval '48 hours'
+where e.severity = 'unplanned_stop';
 
 
 -- Задача 11*. Дубли в maintenance (только SELECT!)
